@@ -1,41 +1,38 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
-const CommentItem = ({ comment, fetchComments }) => {
+function CommentItem({ comment, onEditComment, onDeleteComment }) {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(comment.content);
 
-  const handleEdit = async () => {
-    await axios.put(`http://localhost:5000/api/comments/${comment._id}`, { content });
-    setIsEditing(false);
-    fetchComments(); // Refresh the comments after editing
-  };
-
-  const handleDelete = async () => {
-    await axios.delete(`http://localhost:5000/api/comments/${comment._id}`);
-    fetchComments(); // Refresh the comments after deletion
+  const handleEdit = () => {
+    if (isEditing) {
+      onEditComment(comment._id, { content });
+    }
+    setIsEditing(!isEditing);
   };
 
   return (
-    <div className="comment-item">
+    <li className="list-group-item">
       {isEditing ? (
-        <>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-          <button onClick={handleEdit}>Save</button>
-          <button onClick={() => setIsEditing(false)}>Cancel</button>
-        </>
+        <input
+          type="text"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="form-control"
+        />
       ) : (
-        <>
-          <p>{comment.content}</p>
-          <button onClick={() => setIsEditing(true)}>Edit</button>
-          <button onClick={handleDelete}>Delete</button>
-        </>
+        <span>{comment.content}</span>
       )}
-    </div>
+      <div className="btn-group float-end">
+        <button onClick={handleEdit} className="btn btn-sm btn-secondary">
+          {isEditing ? 'Save' : 'Edit'}
+        </button>
+        <button onClick={() => onDeleteComment(comment._id)} className="btn btn-sm btn-danger">
+          Delete
+        </button>
+      </div>
+    </li>
   );
-};
+}
 
 export default CommentItem;

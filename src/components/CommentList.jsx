@@ -1,48 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import CommentItem from './CommentItem';
+import React, { useState } from 'react';
 
-const CommentList = ({ postId }) => {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
+function CommentItem({ comment, onEditComment, onDeleteComment }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [content, setContent] = useState(comment.content);
 
-  useEffect(() => {
-    fetchComments();
-  }, []);
-
-  const fetchComments = async () => {
-    const response = await axios.get(`http://localhost:5000/api/comments/${postId}`);
-    setComments(response.data);
-  };
-
-  const addComment = async () => {
-    await axios.post('http://localhost:5000/api/comments', { postId, content: newComment });
-    setNewComment('');
-    fetchComments(); // Refresh the comments after adding
+  const handleEdit = () => {
+    if (isEditing) {
+      onEditComment(comment._id, { content });
+    }
+    setIsEditing(!isEditing);
   };
 
   return (
-    <div className="comment-list">
-      <h4>Comments</h4>
-      <div className="new-comment">
-        <textarea
-          placeholder="Add a comment"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
+    <li className="list-group-item">
+      {isEditing ? (
+        <input
+          type="text"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="form-control"
         />
-        <button onClick={addComment}>Add Comment</button>
+      ) : (
+        <span>{comment.content}</span>
+      )}
+      <div className="btn-group float-end">
+        <button onClick={handleEdit} className="btn btn-sm btn-secondary">
+          {isEditing ? 'Save' : 'Edit'}
+        </button>
+        <button onClick={() => onDeleteComment(comment._id)} className="btn btn-sm btn-danger">
+          Delete
+        </button>
       </div>
-      <div className="comments">
-        {comments.map((comment) => (
-          <CommentItem
-            key={comment._id}
-            comment={comment}
-            fetchComments={fetchComments}
-          />
-        ))}
-      </div>
-    </div>
+    </li>
   );
-};
+}
 
-export default CommentList;
+export default CommentItem;
